@@ -16,12 +16,12 @@
  * @param {Object} [overrides] Configuration overrides (defaults from PHP configuration)
  */
 mw.cx.SiteMapper = class {
-	constructor( overrides ) {
-		const config = require( '../config.json' );
+	constructor(overrides) {
+		const config = require('../config.json');
 
 		overrides = overrides || {};
 
-		const siteMapperConfig = Object.assign( {}, config, overrides );
+		const siteMapperConfig = Object.assign({}, config, overrides);
 		this.siteTemplates = siteMapperConfig.SiteTemplates;
 		this.codeMap = siteMapperConfig.DomainCodeMapping;
 		this.translateInTarget = siteMapperConfig.TranslateInTarget;
@@ -36,8 +36,8 @@ mw.cx.SiteMapper = class {
 	 * @param {string} language Language code
 	 * @return {string}
 	 */
-	getWikiDomainCode( language ) {
-		return this.codeMap[ language ] || language;
+	getWikiDomainCode(language) {
+		return this.codeMap[language] || language;
 	}
 
 	/**
@@ -52,9 +52,9 @@ mw.cx.SiteMapper = class {
 	 * @return {string} Source language code
 	 */
 	getCurrentWikiLanguageCode() {
-		const from = mw.config.get( 'wgServerName' ).split( '.', 1 )[ 0 ], fallback = mw.config.get( 'wgContentLanguage' );
+		const from = mw.config.get('wgServerName').split('.', 1)[0], fallback = mw.config.get('wgContentLanguage');
 
-		return this.getLanguageCodeForWikiDomain( from, fallback );
+		return this.getLanguageCodeForWikiDomain(from, fallback);
 	}
 
 	/**
@@ -62,9 +62,9 @@ mw.cx.SiteMapper = class {
 	 * @param {string} [fallback]
 	 * @return {string}
 	 */
-	getLanguageCodeForWikiDomain( domain, fallback ) {
-		for ( const code in this.codeMap ) {
-			if ( this.codeMap[ code ] === domain ) {
+	getLanguageCodeForWikiDomain(domain, fallback) {
+		for (const code in this.codeMap) {
+			if (this.codeMap[code] === domain) {
 				return code;
 			}
 		}
@@ -79,11 +79,11 @@ mw.cx.SiteMapper = class {
 	 * @param {Object} [options] Api options
 	 * @return {mw.ForeignApi} api
 	 */
-	getApi( language, options ) {
-		const domain = this.getWikiDomainCode( language );
-		const url = this.siteTemplates.api.replace( '$1', domain );
-		options = Object.assign( { anonymous: true }, options );
-		return new mw.ForeignApi( url, options );
+	getApi(language, options) {
+		const domain = this.getWikiDomainCode(language);
+		const url = this.siteTemplates.api.replace('$1', domain);
+		options = Object.assign({ anonymous: true }, options);
+		return new mw.ForeignApi(url, options);
 	}
 
 	/**
@@ -95,30 +95,30 @@ mw.cx.SiteMapper = class {
 	 * @param {string|null} [hash] the hash property of the URL
 	 * @return {string}
 	 */
-	getPageUrl( language, title, params, hash ) {
+	getPageUrl(language, title, params, hash) {
 		// Use current wiki's content language, if no language given
-		language = language || mw.config.get( 'wgContentLanguage' );
+		language = language || mw.config.get('wgContentLanguage');
 
-		const domain = this.getWikiDomainCode( language );
-		const prefix = domain.replace( /\$/g, '$$$$' );
+		const domain = this.getWikiDomainCode(language);
+		const prefix = domain.replace(/\$/g, '$$$$');
 
 		let base = this.siteTemplates.view;
-		if ( params && Object.keys( params ).length > 0 ) {
+		if (params && Object.keys(params).length > 0) {
 			base = this.siteTemplates.action || this.siteTemplates.view;
 		}
 
-		base = base.replace( '$1', prefix ).replace( '$2', mw.util.wikiUrlencode( title ).replace( /\$/g, '$$$$' ) );
+		base = base.replace('$1', prefix).replace('$2', mw.util.wikiUrlencode(title).replace(/\$/g, '$$$$'));
 
 		// use location object as base URL, in order to handle protocol relative paths
 		// when base includes an absolute path, the location object won't be taken into account
-		const url = new URL( base, location );
+		const url = new URL(base, location);
 
-		const urlSearchParams = new URLSearchParams( url.search );
-		for ( const key in params ) {
-			urlSearchParams.append( key, params[ key ] );
+		const urlSearchParams = new URLSearchParams(url.search);
+		for (const key in params) {
+			urlSearchParams.append(key, params[key]);
 		}
 
-		if ( hash ) {
+		if (hash) {
 			url.hash = hash;
 		}
 		url.search = urlSearchParams.toString();
@@ -132,16 +132,16 @@ mw.cx.SiteMapper = class {
 	 * @param {Object} [params]
 	 * @return {string}
 	 */
-	getCXServerUrl( module, params ) {
-		if ( params ) {
-			for ( const paramKey in params ) {
-				module = module.replace( paramKey, encodeURIComponent( params[ paramKey ] ) );
+	getCXServerUrl(module, params) {
+		if (params) {
+			for (const paramKey in params) {
+				module = module.replace(paramKey, encodeURIComponent(params[paramKey]));
 			}
 		}
 
 		let cxserverURL = this.siteTemplates.cx;
-		if ( mw.cx.getCXVersion() === 2 ) {
-			cxserverURL = cxserverURL.replace( 'v1', 'v2' );
+		if (mw.cx.getCXVersion() === 2) {
+			cxserverURL = cxserverURL.replace('v1', 'v2');
 		}
 
 		return cxserverURL + module;
@@ -153,15 +153,15 @@ mw.cx.SiteMapper = class {
 	 * @return {Promise}
 	 */
 	getLanguagePairs() {
-		if ( !this.languagePairsPromise ) {
-			const languagePairsAPIUrl = this.getCXServerUrl( '/list/languagepairs' );
-			this.languagePairsPromise = fetch( languagePairsAPIUrl )
-				.then( ( response ) => response.json() )
-				.then( ( response ) => ( {
+		if (!this.languagePairsPromise) {
+			const languagePairsAPIUrl = this.getCXServerUrl('/list/languagepairs');
+			this.languagePairsPromise = fetch(languagePairsAPIUrl)
+				.then((response) => response.json())
+				.then((response) => ({
 					targetLanguages: response.target,
 					sourceLanguages: response.source
-				} ) )
-				.catch( ( response ) => {
+				}))
+				.catch((response) => {
 					mw.log(
 						'Error getting language pairs from ' + languagePairsAPIUrl + ' . ' +
 						response.statusText + ' (' + response.status + '). ' +
@@ -169,7 +169,7 @@ mw.cx.SiteMapper = class {
 					);
 					this.languagePairsPromise = null;
 					return Promise.reject();
-				} );
+				});
 		}
 		return this.languagePairsPromise;
 	}
@@ -192,25 +192,25 @@ mw.cx.SiteMapper = class {
 		targetLanguage,
 		extra
 	) {
-		const queryParams = Object.assign( {
+		const queryParams = Object.assign({
 			from: sourceLanguage,
 			to: targetLanguage
-		}, extra );
+		}, extra);
 
-		if ( sourceTitle ) {
+		if (sourceTitle) {
 			queryParams.page = sourceTitle;
 		}
 
-		if ( targetTitle ) {
+		if (targetTitle) {
 			queryParams.targettitle = targetTitle;
 		}
 
 		const cxPage = 'Special:ContentTranslation';
-		if ( this.translateInTarget ) {
-			const uri = new URL( this.getPageUrl( targetLanguage, cxPage ), location );
-			const urlSearchParams = new URLSearchParams( uri.search );
-			for ( const key in queryParams ) {
-				urlSearchParams.set( key, queryParams[ key ] );
+		if (this.translateInTarget) {
+			const uri = new URL(this.getPageUrl(targetLanguage, cxPage), location);
+			const urlSearchParams = new URLSearchParams(uri.search);
+			for (const key in queryParams) {
+				urlSearchParams.set(key, queryParams[key]);
 			}
 			// Construct the new URL with the updated search params
 			uri.search = urlSearchParams.toString();
@@ -218,7 +218,7 @@ mw.cx.SiteMapper = class {
 			return uri.toString();
 		}
 
-		return mw.util.getUrl( cxPage, queryParams );
+		return mw.util.getUrl(cxPage, queryParams);
 	}
 
 	/**
@@ -239,20 +239,20 @@ mw.cx.SiteMapper = class {
 		step,
 		extra = {}
 	) {
-		const queryParams = Object.assign( {
+		const queryParams = Object.assign({
 			page: sourceTitle,
 			from: sourceLanguage,
 			to: targetLanguage,
 			step
-		}, extra );
+		}, extra);
 
 		const mintPage = 'Special:AutomaticTranslation';
-		if ( this.getCurrentWikiLanguageCode() !== targetLanguage ) {
-			const uri = new URL( this.getPageUrl( targetLanguage, mintPage ), location );
-			const urlSearchParams = new URLSearchParams( uri.search );
+		if (this.getCurrentWikiLanguageCode() !== targetLanguage) {
+			const uri = new URL(this.getPageUrl(targetLanguage, mintPage), location);
+			const urlSearchParams = new URLSearchParams(uri.search);
 
-			for ( const key in queryParams ) {
-				urlSearchParams.set( key, queryParams[ key ] );
+			for (const key in queryParams) {
+				urlSearchParams.set(key, queryParams[key]);
 			}
 			// Construct the new URL with the updated search params
 			uri.search = urlSearchParams.toString();
@@ -260,14 +260,14 @@ mw.cx.SiteMapper = class {
 			return uri.toString();
 		}
 
-		return mw.util.getUrl( mintPage, queryParams );
+		return mw.util.getUrl(mintPage, queryParams);
 	}
 
-	setCXTokenValue( sourceLanguage, targetLanguage, sourceTitle, value ) {
+	setCXTokenValue(sourceLanguage, targetLanguage, sourceTitle, value) {
 		// base64 encode the name to get cookie name.
-		let name = 'cx_' + btoa( encodeURIComponent( [ sourceTitle, sourceLanguage, targetLanguage ].join( '_' ) ) );
+		let name = 'cx_' + btoa(encodeURIComponent([sourceTitle, sourceLanguage, targetLanguage].join('_')));
 		// Remove all characters that are not allowed in cookie name: ( ) < > @ , ; : \ " / [ ] ? = { }.
-		name = name.replace( /[()<>@,;\\[\]?={}]/g, '' );
+		name = name.replace(/[()<>@,;\\[\]?={}]/g, '');
 
 		// sameSite set to None and secure set to true to make the cookie visible on cross-domain requests.
 		const options = {
@@ -278,18 +278,18 @@ mw.cx.SiteMapper = class {
 		};
 
 		// BC with old default behavior
-		if ( this.siteTemplates.cookieDomain === null ) {
+		if (this.siteTemplates.cookieDomain === null) {
 			// Save that information in a domain cookie.
-			options.domain = location.hostname.indexOf( '.' ) > 0 ?
-				'.' + location.hostname.split( '.' ).splice( 1 ).join( '.' ) :
+			options.domain = location.hostname.indexOf('.') > 0 ?
+				'.' + location.hostname.split('.').splice(1).join('.') :
 				null; // Mostly for domains like "localhost"
-		} else if ( typeof this.siteTemplates.cookieDomain === 'string' ) {
+		} else if (typeof this.siteTemplates.cookieDomain === 'string') {
 			// Explicit domain cookie, preferred way
 			options.domain = this.siteTemplates.cookieDomain;
 		}
 		// Else: use whatever is the default
 		// At this point, the translator saw the license agreement.
-		mw.cookie.set( name, value, options );
+		mw.cookie.set(name, value, options);
 	}
 
 	/**
@@ -302,8 +302,8 @@ mw.cx.SiteMapper = class {
 	 * @param {string} targetLanguage Target language
 	 * @param {string} sourceTitle Source title
 	 */
-	setCXToken( sourceLanguage, targetLanguage, sourceTitle ) {
-		this.setCXTokenValue( sourceLanguage, targetLanguage, sourceTitle, true );
+	setCXToken(sourceLanguage, targetLanguage, sourceTitle) {
+		this.setCXTokenValue(sourceLanguage, targetLanguage, sourceTitle, true);
 	}
 
 	/**
@@ -314,7 +314,7 @@ mw.cx.SiteMapper = class {
 	 * @param {string} targetLanguage Target language
 	 * @param {string} sourceTitle Source title
 	 */
-	unsetCXToken( sourceLanguage, targetLanguage, sourceTitle ) {
-		this.setCXTokenValue( sourceLanguage, targetLanguage, sourceTitle, null );
+	unsetCXToken(sourceLanguage, targetLanguage, sourceTitle) {
+		this.setCXTokenValue(sourceLanguage, targetLanguage, sourceTitle, null);
 	}
 };

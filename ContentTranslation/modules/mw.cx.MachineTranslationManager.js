@@ -31,15 +31,15 @@ mw.cx.MachineTranslationManager = function MwCxMachineTranslationManager(
  * @param {string} provider Id of the provider
  * @return {string} Translated label
  */
-mw.cx.MachineTranslationManager.prototype.getProviderLabel = function ( provider ) {
-	return mw.msg.apply( null, {
-		Elia: [ 'cx-tools-mt-provider-title', 'Elia.eus' ],
-		Google: [ 'cx-tools-mt-provider-title', 'Google Translate' ],
-		Yandex: [ 'cx-tools-mt-provider-title', 'Yandex.Translate' ],
-		scratch: [ 'cx-tools-mt-dont-use' ],
-		source: [ 'cx-tools-mt-use-source' ],
-		reset: [ 'cx-tools-mt-reset' ]
-	}[ provider ] || [ 'cx-tools-mt-provider-title', provider ] );
+mw.cx.MachineTranslationManager.prototype.getProviderLabel = function (provider) {
+	return mw.msg.apply(null, {
+		Elia: ['cx-tools-mt-provider-title', 'Elia.eus'],
+		Google: ['cx-tools-mt-provider-title', 'Google Translate'],
+		Yandex: ['cx-tools-mt-provider-title', 'Yandex.Translate'],
+		scratch: ['cx-tools-mt-dont-use'],
+		source: ['cx-tools-mt-use-source'],
+		reset: ['cx-tools-mt-reset']
+	}[provider] || ['cx-tools-mt-provider-title', provider]);
 };
 
 /* Public methods */
@@ -52,30 +52,30 @@ mw.cx.MachineTranslationManager.prototype.getProviderLabel = function ( provider
 mw.cx.MachineTranslationManager.prototype.getPreferredProvider = function () {
 	const
 		key = this.getStorageKey(),
-		value = mw.storage.get( key );
+		value = mw.storage.get(key);
 
-	return this.getAvailableProviders().then( ( providers ) => {
-		if ( value && providers.indexOf( value ) >= 0 ) {
+	return this.getAvailableProviders().then((providers) => {
+		if (value && providers.indexOf(value) >= 0) {
 			return value;
 		}
 
 		// Stored provider is invalid or not available right now
 		return this.getDefaultProvider();
-	} );
+	});
 
 };
 
-mw.cx.MachineTranslationManager.prototype.setPreferredProvider = function ( value ) {
+mw.cx.MachineTranslationManager.prototype.setPreferredProvider = function (value) {
 	const key = this.getStorageKey();
 
-	mw.storage.set( key, value );
+	mw.storage.set(key, value);
 };
 
 mw.cx.MachineTranslationManager.prototype.getAvailableProviders = function () {
 	return this.MT.getProviders().then(
-		( providers ) => providers.concat( [ 'source', 'scratch' ] ),
+		(providers) => providers.concat(['source', 'scratch']),
 		// Allow to continue translation even if this fails
-		() => $.Deferred().resolve( [ 'source', 'scratch' ] )
+		() => $.Deferred().resolve(['source', 'scratch'])
 	);
 };
 
@@ -89,15 +89,15 @@ mw.cx.MachineTranslationManager.prototype.getAvailableProviders = function () {
  * @return {jQuery.Promise} Resolves to provider id.
  */
 mw.cx.MachineTranslationManager.prototype.getDefaultNonMTProvider = function () {
-	return mw.loader.using( 'jquery.uls.data' ).then(
+	return mw.loader.using('jquery.uls.data').then(
 		() => {
-			const sourceDir = $.uls.data.getDir( this.sourceLanguage );
-			const targetDir = $.uls.data.getDir( this.targetLanguage );
+			const sourceDir = $.uls.data.getDir(this.sourceLanguage);
+			const targetDir = $.uls.data.getDir(this.targetLanguage);
 
 			return sourceDir === targetDir ? 'source' : 'scratch';
 		},
 		// Convert failure to success
-		() => $.Deferred().resolve( 'source' ).promise()
+		() => $.Deferred().resolve('source').promise()
 	);
 };
 
@@ -108,12 +108,12 @@ mw.cx.MachineTranslationManager.prototype.getDefaultNonMTProvider = function () 
  */
 mw.cx.MachineTranslationManager.prototype.getDefaultProvider = function () {
 	return this.MT.getSuggestedDefaultProvider().then(
-		( provider ) => provider || this.getDefaultNonMTProvider(),
+		(provider) => provider || this.getDefaultNonMTProvider(),
 		() => this.getDefaultNonMTProvider()
 	);
 };
 
 mw.cx.MachineTranslationManager.prototype.getStorageKey = function () {
 	// This format was used by CX1, so keeping it for compatibility.
-	return [ 'cxMTProvider', this.sourceLanguage, this.targetLanguage ].join( '-' );
+	return ['cxMTProvider', this.sourceLanguage, this.targetLanguage].join('-');
 };
