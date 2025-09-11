@@ -383,14 +383,27 @@ mw.cx.SelectedSourcePage.prototype.setData = function (pageTitle, href, config) 
 
 		const languagesPageExistsIn = Object.keys(this.sourcePageTitles);
 		const languageDecorator = function ($language, languageCode) {
-			if (languagesPageExistsIn.indexOf(languageCode) < 0) {
+
+			// if (languagesPageExistsIn.indexOf(languageCode) < 0) {
+			// 	$language.css('font-weight', 'bold');
+			// }
+
+			// By: Ibrahem Qasim
+			// hide en, simple code
+			if (languageCode === 'en' || languageCode === 'simple') {
+				$language.css('display', 'none');
+			} else if (languagesPageExistsIn.indexOf(languageCode) < 0) {
 				$language.css('font-weight', 'bold');
+			} else {
+				// hide already in languages
+				// $language.css( 'display', 'none' );
 			}
 		};
-
-		this.languageFilter.fillSourceLanguages(languagesPageExistsIn, true, {
-			ulsPurpose: 'cx-selectedpage-source'
-		});
+		// By: Ibrahem Qasim
+		// disable this, show only mdwiki
+		// this.languageFilter.fillSourceLanguages(languagesPageExistsIn, true, {
+		// 	ulsPurpose: 'cx-selectedpage-source'
+		// });
 		this.languageFilter.fillTargetLanguages(null, true, {
 			ulsPurpose: 'cx-selectedpage-target',
 			languageDecorator: languageDecorator

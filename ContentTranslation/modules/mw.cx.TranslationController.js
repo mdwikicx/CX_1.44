@@ -14,6 +14,8 @@
 mw.cx.TranslationController = function MwCxTranslationController(
 	translation, veTarget, siteMapper, config
 ) {
+	// By: Ibrahem Qasim
+	this.config = config;
 	this.translation = translation;
 	this.veTarget = veTarget;
 	this.siteMapper = siteMapper;
@@ -40,8 +42,13 @@ mw.cx.TranslationController = function MwCxTranslationController(
 		this.savedTargetTitle = this.translation.getTargetTitle();
 	}
 
+	// this.targetArticle = new mw.cx.TargetArticle(this.translation, this.veTarget, {
+	// 	siteMapper: this.siteMapper
+	// });
+	// By: Ibrahem Qasim
 	this.targetArticle = new mw.cx.TargetArticle(this.translation, this.veTarget, {
-		siteMapper: this.siteMapper
+		siteMapper: this.siteMapper,
+		campaign: this.config?.campaign || ''
 	});
 	this.translationTracker = new mw.cx.TranslationTracker(this.veTarget, config);
 	this.saveScheduler = OO.ui.debounce(this.processSaveQueue.bind(this), 5 * 1000);
