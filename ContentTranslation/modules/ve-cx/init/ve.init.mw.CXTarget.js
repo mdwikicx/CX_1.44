@@ -524,8 +524,27 @@ ve.init.mw.CXTarget.prototype.onSurfaceReady = function () {
 	// Get ready with the translation of first section.
 	this.prefetchTranslationForSection(0);
 
+	// if (this.translation.hasTranslatedSections()) {
+	// 	this.targetSurface.$element.addClass('ve-ui-cxTargetSurface--non-empty');
+	// }
+
+	// By: Ibrahem Qasim
+	// Don't start auto translations if there are Translated Sections;
 	if (this.translation.hasTranslatedSections()) {
+		mw.log.warn('[TD] Translation has Translated Sections, skipping auto translations.');
 		this.targetSurface.$element.addClass('ve-ui-cxTargetSurface--non-empty');
+	} else {
+		const sections = $('.cx-column--translation article').find('section');
+		if (sections && sections.length > 0) {
+			mw.log.warn('[TD] Start auto translations.');
+			for (let i = 0; i < sections.length; i++) {
+				setTimeout(() => {
+					this.prefetchTranslationForSection(i, true);
+				}, i * 1000);
+			}
+		} else {
+			mw.log.warn('[TD] No sections to start auto translations.');
+		}
 	}
 };
 
