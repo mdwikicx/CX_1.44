@@ -1,3 +1,4 @@
 mediawiki.zip
 LocalSettings.php
 *.zip
+/mediawiki
