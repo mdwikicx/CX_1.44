@@ -744,7 +744,8 @@ ve.init.mw.CXTarget.prototype.alignSectionPairs = function () {
 		}
 	});
 	// Restore scroll position
-	$(this.getElementWindow()).scrollTop(scrollPosition);
+	// By: Ibrahem Qasim
+	// $(this.getElementWindow()).scrollTop(scrollPosition);
 };
 
 /**
@@ -964,7 +965,8 @@ ve.init.mw.CXTarget.prototype.setSectionContent = function (section, content, so
 	// Restore scroll top
 	const scrollTop = this.getSurface().view.$window.scrollTop();
 	if (this.getSurface().view.$window.scrollTop() !== scrollTop) {
-		this.getSurface().view.$window.scrollTop(scrollTop);
+		// By: Ibrahem Qasim
+		// this.getSurface().view.$window.scrollTop(scrollTop);
 		mw.log('[CX] Scroll position restored to ' + scrollTop);
 	}
 };
