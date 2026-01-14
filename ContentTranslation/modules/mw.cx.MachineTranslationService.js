@@ -67,7 +67,7 @@ mw.cx.MachineTranslationService.prototype.getSuggestedTitle = function (title) {
 			headers: { Authorization: token }
 		};
 
-		return $.ajax(request).then((response) => response.targetTitle);
+		return $.ajax(request).then((response) => response.targetTitle || '');
 	};
 
 	return this.getCXServerToken().then(fetchTitleSuggestion);

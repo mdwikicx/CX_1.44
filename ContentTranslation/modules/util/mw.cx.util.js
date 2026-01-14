@@ -44,6 +44,9 @@ mw.cx.alignSections = function ( $sourceSection, $targetSection ) {
  * @return {string} New title with changed namespace
  */
 mw.cx.getTitleForNamespace = function ( currentTitle, newNamespaceId ) {
+	if ( !currentTitle ) {
+		return currentTitle;
+	}
 	const currentTitleObj = new mw.Title( currentTitle );
 	const currentNamespace = currentTitleObj.getNamespaceId();
 	if ( newNamespaceId === currentNamespace ) {
