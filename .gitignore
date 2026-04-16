@@ -1,3 +1,5 @@
 mediawiki.zip
 LocalSettings.php
 *.zip
+/mediawiki
+/‏‏ContentTranslation_Original

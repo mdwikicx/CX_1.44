@@ -23,6 +23,8 @@ mw.cx.SiteMapper = class {
 
 		const siteMapperConfig = Object.assign({}, config, overrides);
 		this.siteTemplates = siteMapperConfig.SiteTemplates;
+		// By: Ibrahem Qasim
+		this.SiteTemplates_mdwiki = siteMapperConfig.SiteTemplates_mdwiki;
 		this.codeMap = siteMapperConfig.DomainCodeMapping;
 		this.translateInTarget = siteMapperConfig.TranslateInTarget;
 
@@ -81,7 +83,12 @@ mw.cx.SiteMapper = class {
 	 */
 	getApi(language, options) {
 		const domain = this.getWikiDomainCode(language);
-		const url = this.siteTemplates.api.replace('$1', domain);
+		// const url = this.siteTemplates.api.replace('$1', domain);
+		// By: Ibrahem Qasim
+		const url = language === 'mdwiki'
+			? this.SiteTemplates_mdwiki.api
+			: this.siteTemplates.api.replace('$1', domain);
+
 		options = Object.assign({ anonymous: true }, options);
 		return new mw.ForeignApi(url, options);
 	}
@@ -102,12 +109,21 @@ mw.cx.SiteMapper = class {
 		const domain = this.getWikiDomainCode(language);
 		const prefix = domain.replace(/\$/g, '$$$$');
 
-		let base = this.siteTemplates.view;
-		if (params && Object.keys(params).length > 0) {
-			base = this.siteTemplates.action || this.siteTemplates.view;
-		}
+		// By: Ibrahem Qasim
+		const templates = language === 'mdwiki'
+			? this.SiteTemplates_mdwiki
+			: this.siteTemplates;
 
-		base = base.replace('$1', prefix).replace('$2', mw.util.wikiUrlencode(title).replace(/\$/g, '$$$$'));
+		let base = templates.view;
+		if (params && Object.keys(params).length > 0) {
+			base = templates.action || templates.view;
+		}
+		// base = base.replace('$1', prefix).replace('$2', mw.util.wikiUrlencode(title).replace(/\$/g, '$$$$'));
+		// By: Ibrahem Qasim
+		if (domain !== 'mdwiki') {
+			base = base.replace('$1', prefix);
+		}
+		base = base.replace('$2', mw.util.wikiUrlencode(title).replace(/\$/g, '$$$$'));
 
 		// use location object as base URL, in order to handle protocol relative paths
 		// when base includes an absolute path, the location object won't be taken into account
@@ -142,6 +158,11 @@ mw.cx.SiteMapper = class {
 		let cxserverURL = this.siteTemplates.cx;
 		if (mw.cx.getCXVersion() === 2) {
 			cxserverURL = cxserverURL.replace('v1', 'v2');
+		}
+		// By: Ibrahem Qasim
+		// if module has /mdwiki then replace it with /en
+		if (module.indexOf('/mdwiki/') > -1) {
+			module = module.replace('/mdwiki/', '/en/');
 		}
 
 		return cxserverURL + module;
