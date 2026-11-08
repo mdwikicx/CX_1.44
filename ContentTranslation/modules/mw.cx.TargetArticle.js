@@ -17,7 +17,6 @@ mw.cx.TargetArticle = function MWCXTargetArticle(translation, veTarget, config) 
 	this.siteMapper = config.siteMapper;
 	this.campaign = config.campaign || ''; // By: Ibrahem Qasim
 	console.log('MWCXTargetArticle: campaign: ' + this.campaign);
-
 	this.sourceTitle = translation.getSourceTitle();
 	this.sourceLanguage = translation.getSourceLanguage();
 	this.targetLanguage = translation.getTargetLanguage();
@@ -222,12 +221,6 @@ mw.cx.TargetArticle.prototype.publishSection = function () {
 mw.cx.TargetArticle.prototype.publishSuccess = function (response, jqXHR) {
 	const publishAction = this.translation.isSectionTranslation() ? 'cxpublishsection' : 'cxpublish';
 	const publishResult = response[publishAction];
-
-	// if (publishResult.result === 'success') {
-	// 	this.translation.setTargetURL(publishResult.targeturl);
-	// 	return this.publishComplete(publishResult.targettitle || null);
-	// }
-
 	// By: Ibrahem Qasim
 	console.log("publishSuccess:");
 
