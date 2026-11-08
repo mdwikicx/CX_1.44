@@ -14,8 +14,6 @@
  * @param {Object} config Configuration
  */
 mw.cx.TitlePairCache = function CXTitlePairCache(config) {
-	// mw.cx.TitlePairCache.super.call(this, config.siteMapper.getApi(config.sourceLanguage));
-
 	// By: Ibrahem Qasim
 	var sourceLanguage = config.sourceLanguage;
 	// if (sourceLanguage === 'mdwiki') { sourceLanguage = 'en'; }

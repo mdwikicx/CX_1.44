@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Contains the special page Special:ContentTranslation.
  *
@@ -398,24 +397,24 @@ class SpecialContentTranslation extends SpecialPage
 
 		$out->addJsConfigVars([
 			'wgContentTranslationUnmodifiedMTThresholdForPublish' =>
-			$config->get('ContentTranslationUnmodifiedMTThresholdForPublish')
+				$config->get('ContentTranslationUnmodifiedMTThresholdForPublish')
 		]);
 
 		if ($this->onDesktopTranslationView()) {
 			$version = 2;
 			$out->addJsConfigVars([
-				'wgContentTranslationCampaigns' => $config->get('ContentTranslationCampaigns'),
+				'wgContentTranslationCampaigns'           => $config->get('ContentTranslationCampaigns'),
 				'wgContentTranslationPublishRequirements' => $config->get('ContentTranslationPublishRequirements'),
-				'wgContentTranslationVersion' => $version,
-				'wgContentTranslationEnableMT' => $config->get('ContentTranslationEnableMT')
+				'wgContentTranslationVersion'             => $version,
+				'wgContentTranslationEnableMT'            => $config->get('ContentTranslationEnableMT')
 			]);
 		} else {
 			$out->addJsConfigVars([
-				'wgContentTranslationEnableSuggestions' => $config->get('ContentTranslationEnableSuggestions'),
-				'wgRecommendToolAPIURL' => $config->get('RecommendToolAPIURL'),
-				'wgContentTranslationExcludedNamespaces' => $config->get('ContentTranslationExcludedNamespaces'),
+				'wgContentTranslationEnableSuggestions'      => $config->get('ContentTranslationEnableSuggestions'),
+				'wgRecommendToolAPIURL'                      => $config->get('RecommendToolAPIURL'),
+				'wgContentTranslationExcludedNamespaces'     => $config->get('ContentTranslationExcludedNamespaces'),
 				'wgContentTranslationEnableUnifiedDashboard' =>
-				$config->get('ContentTranslationEnableUnifiedDashboard')
+					$config->get('ContentTranslationEnableUnifiedDashboard')
 			]);
 		}
 	}

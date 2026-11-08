@@ -15,9 +15,7 @@ mw.cx.TargetArticle = function MWCXTargetArticle(translation, veTarget, config) 
 	this.veTarget = veTarget;
 	this.config = config;
 	this.siteMapper = config.siteMapper;
-
-	// By: Ibrahem Qasim
-	this.campaign = config.campaign || '';
+	this.campaign = config.campaign || ''; // By: Ibrahem Qasim
 	console.log('MWCXTargetArticle: campaign: ' + this.campaign);
 
 	this.sourceTitle = translation.getSourceTitle();
@@ -235,8 +233,9 @@ mw.cx.TargetArticle.prototype.publishSuccess = function (response, jqXHR) {
 
 	// const mdwiki_result = publishResult?.mdwiki_result;
 	const wikipedia_result = publishResult?.wikipedia_result;
+	const sourceRevisionId = publishResult?.sourceRevisionId;
 
-	const wd_data = wikipedia_result.LinkToWikidata || publishResult.LinkToWikidata;
+	const wd_data = wikipedia_result.LinkToWikidata || publishResult.LinkToWikidata || [];
 
 	if (wikipedia_result) {
 		// console.log("local result: " + JSON.stringify(publishResult.local_result, null, 1));
@@ -261,14 +260,6 @@ mw.cx.TargetArticle.prototype.publishSuccess = function (response, jqXHR) {
 		if (this.sourceLanguage === "mdwiki" && publishResult.published_to != "local") {
 			targeturl = publishResult.targeturl_wiki;
 		}
-		var wd_result = "";
-		var qid = "";
-		if (wd_data) {
-			qid = wd_data.qid;
-			console.log('LinkToWikidata: ' + JSON.stringify(wd_data, null, 1));
-			// LinkToWikidata: {"result":"success","qid":"Q474070"}
-			wd_result = wd_data.result;
-		}
 
 		this.translation.setTargetURL(targeturl);
 
@@ -279,8 +270,7 @@ mw.cx.TargetArticle.prototype.publishSuccess = function (response, jqXHR) {
 
 		if (this.sourceLanguage === "mdwiki") {
 			var title2 = new_title || this.getTargetTitle();
-			this.addMdwikiLinks(this.targetLanguage, title2, qid, wd_result);
-			// mw.cx.TargetArticle.prototype.addMdwikiLinks(this.targetLanguage, title2, qid, wd_result);
+			this.addMdwikiLinks(this.targetLanguage, title2, wd_data, sourceRevisionId);
 		}
 
 		return done;
@@ -343,9 +333,21 @@ mw.cx.TargetArticle.prototype.publishFail = function (errorCode, messageOrFailOb
 	let mddx = "[TD] OAuth session expired, Please Log again to Translation Dashboard";
 	// cx-message-widget-message
 	let mddxlink = "OAuth session expired, Please Log again to <a href='https://mdwiki.toolforge.org/Translation_Dashboard/auth.php?a=login' target='_blank'>Translation Dashboard</a>";
+
+	const editError = data.error ? data.error : data.edit?.error;
+
+	if (editError) {
+		console.log("editError: " + JSON.stringify(editError, null, 1));
+	}
+	if (editError && editError.code) {
 	// {"result":"error","edit":{"error":"noaccess","username":"Mr. Ibrahem"}}
-	if (data?.edit?.error) {
-		if (data.edit.error === 'noaccess' || (data.edit.error && data.edit.error.code === 'noaccess')) {
+		let noaccess_errors = [
+			"mwoauth-invalid-authorization",
+			"noaccess",
+			"no access",
+		];
+		// mdwiki errors
+		if (noaccess_errors.includes(editError.code)) {
 			this.showPublishError(mddx, "no access_keys in Translation_Dashboard");
 			// $('.cx-message-widget-message').html(mddxlink)
 			$('.cx-message-widget-message')
@@ -358,13 +360,21 @@ mw.cx.TargetArticle.prototype.publishFail = function (errorCode, messageOrFailOb
 						.text('Translation Dashboard')
 				);
 			$('.cx-message-widget-details').html(" Then refresh the page");
-			// $('.cx-message-widget-details').html("<a href='https://mdwiki.toolforge.org/Translation_Dashboard/auth.php?a=login' target='_blank'>Translation Dashboard</a>")
 			return;
 		}
-	}
 
-	const editError = data.error;
-	if (editError) {
+		// mdwiki errors
+		if (editError.code === 'validation_error') {
+			this.showPublishError("validation_error", editError.info);
+			$('.cx-message-widget-message')
+				.empty()
+				.append(
+					$('<span>').text('Validation error:'),
+					$('<br>'),
+					$('<span>').html(editError.info)
+				);
+			return;
+		}
 		// Handle spam blacklist error (either from core or from Extension:SpamBlacklist)
 		// Example of API result - https://phabricator.wikimedia.org/P8991
 		if (editError.code === 'spamblacklist') {
@@ -473,7 +483,6 @@ mw.cx.TargetArticle.prototype.showErrorCaptcha = function (apiResult) {
 		// Based on FancyCaptcha::getFormInformation() (https://git.io/v6mml) and
 		// ext.confirmEdit.fancyCaptcha.js in the ConfirmEdit extension.
 		mw.loader.load('ext.confirmEdit.fancyCaptcha');
-		// this.captchaDialog.setFancyCaptcha(apiResult.url);
 		// By: Ibrahem Qasim
 		let wikiurl = "https://" + this.targetLanguage + ".wikipedia.org";
 		this.captchaDialog.setFancyCaptcha(wikiurl + apiResult.url);
@@ -535,9 +544,14 @@ mw.cx.TargetArticle.prototype.showErrorUnknown = function (editResult, data, jqX
 	// const errorMsg = (editResult && editResult.info) || (data && data.error && data.error.info),
 	// 	errorCode = (editResult && editResult.code) || (data && data.error && data.error.code);
 	// By: Ibrahem Qasim
-	const errorMsg = editResult?.info ?? data?.error?.info;
+	let errorMsg = editResult?.info ?? data?.error?.info;
 	const errorCode = editResult?.code ?? data?.error?.code;
 
+	// By: Ibrahem Qasim
+	// if errorMsg is object then convert it to string
+	if (typeof errorMsg === 'object') {
+		errorMsg = JSON.stringify(errorMsg);
+	}
 	let unknown = 'Unknown error';
 
 	if (jqXHR && jqXHR.status !== 200) {
@@ -728,14 +742,20 @@ mw.cx.TargetArticle.prototype.getTags = function (hasTooMuchUnmodifiedText) {
 	return tagString;
 };
 // By: Ibrahem Qasim
-mw.cx.TargetArticle.prototype.addMdwikiLinks = function (targetLanguage, targetTitle, qid, wd_result) {
+mw.cx.TargetArticle.prototype.addMdwikiLinks = function (targetLanguage, targetTitle, wd_data, sourceRevisionId) {
 	const pp = {
 		lang: targetLanguage,
 		title: targetTitle,
+		mdwiki_revid: sourceRevisionId,
 		save: 1
 	};
 	var url = "https://mdwiki.toolforge.org/fixwikirefs.php?" + $.param(pp);
 	let link = `<a href='${url}' target='_blank'>Fix References</a>`
+
+	var wd_result = wd_data.result ?? '';
+	var qid = wd_data.qid ?? '';
+	// var wd_data_error = wd_data.error ?? '';
+	console.log('LinkToWikidata: ' + JSON.stringify(wd_data, null, 1));
 
 	var wdlink = "";
 	if (qid != "" && qid != "undefined" && wd_result != "success") {
@@ -743,7 +763,9 @@ mw.cx.TargetArticle.prototype.addMdwikiLinks = function (targetLanguage, targetT
 		var wdurl = `https://www.wikidata.org/wiki/Special:SetSiteLink/${qid}/${target_wiki}?` + $.param({ page: targetTitle });
 		wdlink = ` - <a href='${wdurl}' target='_blank'>Link to Wikidata</a>`
 	}
-	var html = `<div style="float:left;">${link}${wdlink}</div>`;
+	// var html = `<div style="float:left;">${link}${wdlink}</div>`;
+	var html = `<br>x${link}${wdlink}`;
 
-	$('.cx-message-widget-details').append(html);
+	// $('.cx-message-widget-details').append(html);
+	$('.cx-message-widget-message').append(html);
 }

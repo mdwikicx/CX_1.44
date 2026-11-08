@@ -149,12 +149,20 @@ mw.cx.MachineTranslationService.prototype.fetchProviders = function () {
 	});
 	// By: Ibrahem Qasim
 	// {"mt":["MinT","Google"]}
-	// 2024 By: Ibrahem Qasim
 	if (this.targetLanguage === "or") {
 		return $.Deferred().resolve(["Google"]);
 	}
 
-	return $.get(fetchProvidersUrl).then((response) => response.mt || []);
+	return $.get(fetchProvidersUrl).then(function (response) {
+		let providers = response.mt || [];
+
+		if (providers.includes('Google')) {
+			// Filter and prepend 'Google' in a cleaner way
+			providers = ['Google', ...providers.filter(item => item !== 'Google')];
+		}
+
+		return providers;
+	});
 };
 
 mw.cx.MachineTranslationService.prototype.fetchProvidersError = function () {
@@ -196,6 +204,11 @@ mw.cx.MachineTranslationService.prototype.fetchCXServerToken_MDWIKI_issue = func
 
 	var url = "https://mdwiki.toolforge.org/publish/token.php?" + $.param(params)
 
+	let noaccess_errors = [
+		"mwoauth-invalid-authorization",
+		"noaccess",
+		"no access",
+	];
 	const result = fetch(url, options)
 		.then((response) => {
 			if (!response.ok) {
@@ -205,9 +218,11 @@ mw.cx.MachineTranslationService.prototype.fetchCXServerToken_MDWIKI_issue = func
 			return response.json();
 		})
 		.then((data) => {
-			if (data.error && data.error.code === "no access") {
-				// mw.hook('mw.cx.error').fire('Unable to fetch cxtoken. !! ');
-				mw.cx.MachineTranslationService.prototype.cxtoken_error();
+			if (data?.error) {
+				if (noaccess_errors.includes(data.error?.code)) {
+					// mw.hook('mw.cx.error').fire('Unable to fetch cxtoken. !! ');
+					mw.cx.MachineTranslationService.prototype.cxtoken_error();
+				}
 				console.log('Fetch failed:', data);
 			} else {
 				console.log('Fetch successful:', data);

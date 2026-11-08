@@ -45,6 +45,7 @@ ve.dm.CXLinkAnnotation.static.toDataElement = function (domElements, converter) 
 		// By: Ibrahem Qasim
 		// if title endswith ( |) then remove it
 		//  data-linkid="5" href="ବିକିରଣ ଚିକିତ୍ସା |" id="mwBA" rel="mw:WikiLink" title="ବିକିରଣ ଚିକିତ୍ସା |">
+		// By: Ibrahem Qasim
 		if (title.endsWith('|')) {
 			title = title.substring(0, title.length - 1);
 		}

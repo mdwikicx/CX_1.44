@@ -180,7 +180,8 @@ mw.cx.SiteMapper = class {
 				.then((response) => response.json())
 				.then((response) => ({
 					targetLanguages: response.target,
-					sourceLanguages: response.source
+					sourceLanguages: response.source,
+					// sourceLanguages: ["en", "ar"],
 				}))
 				.catch((response) => {
 					mw.log(
