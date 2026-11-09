@@ -13,9 +13,12 @@
  */
 mw.cx.ui.TranslationView = function (config) {
 	this.infobar = new mw.cx.ui.Infobar(config);
+	// By: Ibrahem Qasim
+	var sourceLanguage = config.sourceLanguage;
+	// if (sourceLanguage === 'mdwiki') { sourceLanguage = 'en'; }
 	this.sourceColumn = new mw.cx.ui.SourceColumn({
 		siteMapper: config.siteMapper,
-		language: config.sourceLanguage,
+		language: sourceLanguage,
 		title: config.sourceTitle,
 		sectionTitle: config.sourceSectionTitle
 	});

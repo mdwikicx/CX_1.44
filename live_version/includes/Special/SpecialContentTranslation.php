@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Contains the special page Special:ContentTranslation.
  *
@@ -80,7 +79,10 @@ class SpecialContentTranslation extends SpecialPage
 		}
 
 		if (!$this->canUserProceed()) {
-			return;
+			// return;
+			// By: Ibrahem Qasim
+			// some issue when use mdwiki.org
+			echo "";
 		}
 
 		if ($this->isUnifiedDashboard()) {
@@ -209,7 +211,10 @@ class SpecialContentTranslation extends SpecialPage
 		// Remove all characters that are not allowed in cookie name: ( ) < > @ , ; : \ " / [ ] ? = { }.
 		$cookieName = preg_replace('/[()<>@,;:\\"\/\[\]?={}]/', '', $cookieName);
 
-		return $request->getCookie($cookieName, '') !== null;
+		// return $request->getCookie($cookieName, '') !== null;
+		// issue with medwiki.toolforge.org session
+		// By: Ibrahem Qasim
+		return true;
 	}
 
 	protected function canUserProceed(): bool
@@ -392,24 +397,24 @@ class SpecialContentTranslation extends SpecialPage
 
 		$out->addJsConfigVars([
 			'wgContentTranslationUnmodifiedMTThresholdForPublish' =>
-			$config->get('ContentTranslationUnmodifiedMTThresholdForPublish')
+				$config->get('ContentTranslationUnmodifiedMTThresholdForPublish')
 		]);
 
 		if ($this->onDesktopTranslationView()) {
 			$version = 2;
 			$out->addJsConfigVars([
-				'wgContentTranslationCampaigns' => $config->get('ContentTranslationCampaigns'),
+				'wgContentTranslationCampaigns'           => $config->get('ContentTranslationCampaigns'),
 				'wgContentTranslationPublishRequirements' => $config->get('ContentTranslationPublishRequirements'),
-				'wgContentTranslationVersion' => $version,
-				'wgContentTranslationEnableMT' => $config->get('ContentTranslationEnableMT')
+				'wgContentTranslationVersion'             => $version,
+				'wgContentTranslationEnableMT'            => $config->get('ContentTranslationEnableMT')
 			]);
 		} else {
 			$out->addJsConfigVars([
-				'wgContentTranslationEnableSuggestions' => $config->get('ContentTranslationEnableSuggestions'),
-				'wgRecommendToolAPIURL' => $config->get('RecommendToolAPIURL'),
-				'wgContentTranslationExcludedNamespaces' => $config->get('ContentTranslationExcludedNamespaces'),
+				'wgContentTranslationEnableSuggestions'      => $config->get('ContentTranslationEnableSuggestions'),
+				'wgRecommendToolAPIURL'                      => $config->get('RecommendToolAPIURL'),
+				'wgContentTranslationExcludedNamespaces'     => $config->get('ContentTranslationExcludedNamespaces'),
 				'wgContentTranslationEnableUnifiedDashboard' =>
-				$config->get('ContentTranslationEnableUnifiedDashboard')
+					$config->get('ContentTranslationEnableUnifiedDashboard')
 			]);
 		}
 	}

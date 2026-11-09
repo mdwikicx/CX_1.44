@@ -47,6 +47,11 @@ ve.dm.CXReferenceNode.static.toDataElement = function ( domElements ) {
 	} catch ( e ) {
 		cxData = {};
 	}
+	// New By: Ibrahem Qasim
+	// When reference adaptation is missing/failed, copy the source reference as is
+	// and mark it as adapted so it is not dropped or reported as missing.
+	cxData.partial = false;
+	cxData.adapted = true;
 
 	dataElement.attributes.cx = cxData;
 

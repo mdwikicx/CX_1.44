@@ -1,3 +1,6 @@
+
+> Live at [https://mdwikicx.toolforge.org/mediawiki/](https://mdwikicx.toolforge.org/mediawiki/)
+
 # ContentTranslation
 
 ContentTranslation is a tool that allows editors to translate

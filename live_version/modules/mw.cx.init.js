@@ -3,7 +3,7 @@
  */
 
 (function () {
-	'use strict';
+	"use strict";
 
 	/**
 	 * This method receives the "targettitle" URL param, the sourceTitle and the mtService as arguments,
@@ -24,7 +24,15 @@
 		}
 
 		return mtService.getSuggestedTitle(sourceTitle).then(
-			(suggestedTitle) => mw.cx.getTitleForNamespace(suggestedTitle, mw.cx.getDefaultTargetNamespace()),
+			(suggestedTitle) => {
+				if (!suggestedTitle) {
+					return sourceTitle;
+				}
+				return mw.cx.getTitleForNamespace(
+					suggestedTitle,
+					mw.cx.getDefaultTargetNamespace()
+				);
+			},
 			() => sourceTitle
 		);
 	}
@@ -34,10 +42,12 @@
 
 		const query = Object.fromEntries(new URL(location.href).searchParams);
 		if (
-			!query.page || !query.from || !query.to ||
-			(mw.Title.newFromText(query.page) === null)
+			!query.page ||
+			!query.from ||
+			!query.to ||
+			mw.Title.newFromText(query.page) === null
 		) {
-			location.href = mw.util.getUrl('Special:ContentTranslation');
+			location.href = mw.util.getUrl("Special:ContentTranslation");
 			return;
 		}
 
@@ -53,36 +63,71 @@
 		mw.cx.sourceLanguage = query.from;
 		// Global services that every class can expect to have
 		services = {
-			siteMapper: mw.cx.siteMapper
+			siteMapper: mw.cx.siteMapper,
 		};
 
-		services.requestManager = new mw.cx.MwApiRequestManager(mw.cx.sourceLanguage, mw.cx.targetLanguage, services.siteMapper);
-		services.MTService = new mw.cx.MachineTranslationService(mw.cx.sourceLanguage, mw.cx.targetLanguage, services.siteMapper);
-		services.MTManager = new mw.cx.MachineTranslationManager(mw.cx.sourceLanguage, mw.cx.targetLanguage, services.MTService);
+		services.requestManager = new mw.cx.MwApiRequestManager(
+			mw.cx.sourceLanguage,
+			mw.cx.targetLanguage,
+			services.siteMapper
+		);
+		services.MTService = new mw.cx.MachineTranslationService(
+			mw.cx.sourceLanguage,
+			mw.cx.targetLanguage,
+			services.siteMapper
+		);
+		services.MTManager = new mw.cx.MachineTranslationManager(
+			mw.cx.sourceLanguage,
+			mw.cx.targetLanguage,
+			services.MTService
+		);
+		// By: Ibrahem Qasim
+		services.campaign = query.campaign;
+		services.tr_type = query.tr_type;
 
-		getTargetTitle(query.targettitle, sourceTitle, services.MTService).then((targetTitle) => {
-			const sourceWikiPage = new mw.cx.dm.WikiPage(sourceTitle, mw.cx.sourceLanguage, sourceRevision, sourceSectionTitle);
-			const targetWikiPage = new mw.cx.dm.WikiPage(targetTitle, mw.cx.targetLanguage, null, targetSectionTitle);
-			const translation = new mw.cx.init.Translation(sourceWikiPage, targetWikiPage, services);
-			translation.init();
+		getTargetTitle(query.targettitle, sourceTitle, services.MTService).then(
+			(targetTitle) => {
+				const sourceWikiPage = new mw.cx.dm.WikiPage(
+					sourceTitle,
+					mw.cx.sourceLanguage,
+					sourceRevision,
+					sourceSectionTitle
+				);
+				const targetWikiPage = new mw.cx.dm.WikiPage(
+					targetTitle,
+					mw.cx.targetLanguage,
+					null,
+					targetSectionTitle
+				);
+				const translation = new mw.cx.init.Translation(
+					sourceWikiPage,
+					targetWikiPage,
+					services
+				);
+				translation.init();
 
-			if (query.campaign) {
-				mw.hook('mw.cx.cta.accept').fire(query.campaign, mw.cx.sourceLanguage, sourceTitle, mw.cx.targetLanguage);
+				if (query.campaign) {
+					mw.hook("mw.cx.cta.accept").fire(
+						query.campaign,
+						mw.cx.sourceLanguage,
+						sourceTitle,
+						mw.cx.targetLanguage
+					);
+				}
+
+				if (mw.config.get("wgContentTranslationBetaFeatureEnabled")) {
+					mw.notify(mw.msg("cx-beta-feature-enabled-notification"));
+				}
+
+				// The default values for these options depend on PageImages and Wikibase Client
+				// being installed on this wiki. Because we are querying remote wikis, this makes
+				// no sense, and hence overwrite the values.
+				const VEConfig = mw.config.get("wgVisualEditorConfig");
+				VEConfig.usePageImages = true;
+				VEConfig.usePageDescriptions = true;
+				mw.config.set("wgVisualEditorConfig", VEConfig);
 			}
-
-			if (mw.config.get('wgContentTranslationBetaFeatureEnabled')) {
-				mw.notify(mw.msg('cx-beta-feature-enabled-notification'));
-			}
-
-			// The default values for these options depend on PageImages and Wikibase Client
-			// being installed on this wiki. Because we are querying remote wikis, this makes
-			// no sense, and hence overwrite the values.
-			const VEConfig = mw.config.get('wgVisualEditorConfig');
-			VEConfig.usePageImages = true;
-			VEConfig.usePageDescriptions = true;
-			mw.config.set('wgVisualEditorConfig', VEConfig);
-		});
-
+		);
 	}
 
 	// On document ready, initialize, but not during QUnit tests, when this code is loaded
@@ -90,4 +135,4 @@
 	if (!window.QUnit) {
 		$(initCX);
 	}
-}());
+})();

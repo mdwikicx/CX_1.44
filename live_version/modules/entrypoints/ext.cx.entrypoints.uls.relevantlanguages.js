@@ -1,5 +1,8 @@
 const sitematrix = require('./sitematrix.json');
 
+// By: Ibrahem Qasim
+// sitematrix.push('mdwiki');
+
 (function () {
 	let entrypointRendered = false;
 	const siteMapper = new mw.cx.SiteMapper();

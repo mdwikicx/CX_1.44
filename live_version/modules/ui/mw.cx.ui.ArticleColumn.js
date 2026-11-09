@@ -43,9 +43,14 @@ mw.cx.ui.ArticleColumn = function (config) {
 			{ value: config.sectionTitle }
 		);
 	} else {
+		// this.titleWidget = new mw.cx.ui.PageTitleWidget(
+		// 	new mw.cx.dm.PageTitleModel(),
+		// 	{ value: config.title }
+		// );
+		// By: Ibrahem Qasim
 		this.titleWidget = new mw.cx.ui.PageTitleWidget(
 			new mw.cx.dm.PageTitleModel(),
-			{ value: config.title }
+			{ value: config.title, language: config.language }
 		);
 	}
 	this.direction = $.uls.data.getDir(config.language);
